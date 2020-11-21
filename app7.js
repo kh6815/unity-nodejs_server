@@ -934,7 +934,7 @@ io.on('connection', function(socket){
             }
         }
         else if(RoomName == "Room 2"){
-
+            var check = 0;
         }
     });
 
