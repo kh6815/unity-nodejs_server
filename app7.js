@@ -696,33 +696,15 @@ var gameroom = [{
 }];//0번방, 1번방 생성
 var clients1 = [];
 var clients2 = [];
-var exclient = [{
-        image_count:1,
-        x:0,
-        y:0
-    }, {
-        image_count:2,
-        x:0,
-        y:0
-    }, {
-        image_count:3,
-        x:0,
-        y:0
-    },{
-        image_count:4,
-        x:0,
-        y:0
-    },{
-        image_count:5,
-        x:0,
-        y:0
-    }];
 
+var example =0;
 
 var image_count_number = 0;
 io.on('connection', function(socket){
     console.log('a user connected');
-        if(image_count_number < 5)
+
+/*
+    if(image_count_number < 5)
     {
         image_count_number = image_count_number + 1;
         var count_number = {
@@ -731,52 +713,10 @@ io.on('connection', function(socket){
         console.log(count_number.image_count);
         socket.emit("ImageCount", count_number);
     }
+*/
 
     socket.on("User_Image", function(data){
-        var msg = JSON.parse(data);
-        var users = {
-            image_count : JSON.parse(msg.image_count)
-        };
-        console.log(users.image_count);
-        socket.emit("USER_IMAGE", msg);
     });
-
-    socket.on("Msg", function(data){
-        var msg = JSON.parse(data);
-        //console.log(msg);
-        //var x0 = msg[0].x;
-        //var y0 = msg[0].y;
-        //var image_count = msg[0].image_count;
-        /*
-        console.log(msg.data_Move_X_Y[0].x + " " + msg.data_Move_X_Y[0].y + " " +msg.data_Move_X_Y[0].image_count);*/
-
-        for(var i = 0; i < 5; i++){
-            if(exclient[i].image_count == msg.image_count){
-                exclient[i].x = msg.x;
-                exclient[i].y = msg.y;
-                break;
-            }
-        }
-
-
-        // userid = msg.userid;
-       // console.log(socket.id);
-        var msg= {
-                    client : exclient
-                 };
-
-
-        socket.broadcast.emit("MsgRes", msg);
-    });
-
-
-
-
-
-
-
-
-
 
 
 
@@ -951,42 +891,23 @@ io.on('connection', function(socket){
 
 
 
+    socket.on("Msg", function(data){
+        var msg = JSON.parse(data);
 
-
+        socket.broadcast.emit("MsgRes", msg);
+    });
 
 
     socket.on("beep", function(data){
-        var t = [];
-        //var msg = JSON.parse(data);
-        /*
-        var Date_Move_x_y = {
-            userid : "유저아이디",
-            x : 10,
-            y : 20
-        }
-        var Date_Move_x_y2 = {
-            userid : "유저아이디2",
-            x : 30,
-            y : 40
-        }
+            var NewthisPlayer = {
+                user1 : 1,
+                user2 : 2,
+                user3 : 3,
+                user4 : 4,
+                user5 : 5
+            }
 
-        t.push(Date_Move_x_y);
-        t.push(Date_Move_x_y2);
-
-        var tt = {
-            Date : ,
-            msg : msg
-        }*/
-
-        t.push({"item1":"a","item2":"b"});
-        t.push({"item1":"c","item2":"d"});
-
-        var Date_Move_x_y = {
-            "result":true,
-            "item": t
-        }
-
-        socket.emit("boop", Date_Move_x_y);
+        socket.emit("boop", NewthisPlayer);
     });
 
 });
