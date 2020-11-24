@@ -906,7 +906,7 @@ io.on('connection', function(socket){
                 user4 : 4,
                 user5 : 5
             }
-
+        //socket.emit("boop2", NewthisPlayer);
         socket.emit("boop", NewthisPlayer);
     });
 
