@@ -247,8 +247,7 @@ router.route('/process/findpw').post(function(req, res){
     console.log('/process/findpw 호출됨.');
 
     var paramId = req.body.id || req.query.id;
-    var paramName = req.body.email || req.query.email;
-
+    var paramEmail = req.body.email || req.query.email;
     console.log('요청 파라미터 : ' + paramEmail);
 
     // pool 객체가 초기화된 경우, authUser 함수 호출하여 사용자 인증
