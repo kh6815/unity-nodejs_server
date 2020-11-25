@@ -758,7 +758,8 @@ io.on('connection', function(socket){
                 UserCharacter : msg.Character,
                 JoinRoomNumber : 0,
                 imageNumber : ++gameroom[0].imageMatchingCount,
-                readyCheck : false
+                readyCheck : false,
+                isImposter : false
             });
 
 
@@ -859,9 +860,16 @@ io.on('connection', function(socket){
                 }
             }
 
-            if(gameroom[0].GameStartCount == 5){
-                var check = true;
-                io.sockets.in(0).emit("GameStart", check);
+            if(gameroom[0].GameStartCount == 2){
+                var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1
+
+                clients1[ImposterNumber].isImposter = true;
+
+                var temp = {
+                    USER : clients1,
+                    GameStartCount : gameroom[0].GameStartCount//오류 뜰수도 있으니까 그냥 넘겨줌
+                }
+                io.sockets.in(0).emit("GameStart", temp);
             }
             else{
                 var temp = {
