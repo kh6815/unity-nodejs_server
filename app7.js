@@ -748,27 +748,34 @@ io.on('connection', function(socket){
         console.log(UserName);
 
         if(RoomName == "Room 1") { //room1에 참가
-            socket.join(0);//방에 참가
+            if(gameroom[0].GameStartCount < 5){//게임이 시작되었으면 참가 못하게하기위함.
+                socket.join(0);//방에 참가
 
-                    //userid, image랑 매칭할 숫자값?,
-
-             clients1.push({
+                clients1.push({
                 UserID : msg.UserID,
                 UserName : msg.UserName,
                 UserCharacter : msg.Character,
                 JoinRoomNumber : 0,
                 imageNumber : ++gameroom[0].imageMatchingCount,
                 readyCheck : false,
-                isImposter : false
-            });
+                isImposter : false,
+                //iscitizen : true,
+                //isghost :false
+                });
 
 
-            var temp = {
-                USER : clients1,
-                GameStartCount : gameroom[0].GameStartCount
+                var temp = {
+                    USER : clients1,
+                    GameStartCount : gameroom[0].GameStartCount
+                }
+
+                io.sockets.in(0).emit("JoinRoomUserInfo", temp);
+
+                }
+            else{
+                socket.emit("Can't_Join", "게임중인 방에 참여할 수 없습니다.");
             }
-
-            io.sockets.in(0).emit("JoinRoomUserInfo", temp);
+                    //userid, image랑 매칭할 숫자값?,
         }
         else if(RoomName == "Room 2"){//room2
             socket.join(1);
@@ -886,7 +893,15 @@ io.on('connection', function(socket){
     });
 
 
+    socket.on("exampleMsg", function(data){
+        var msg = JSON.parse(data);
+        var name = msg.name;
+        var text = msg.text;
+        console.log(name);
+        console.log(text);
 
+        socket.broadcast.emit("SendToServerMsg", msg);
+    });
 
 
 
@@ -904,7 +919,7 @@ io.on('connection', function(socket){
         socket.broadcast.emit("MsgRes", msg);
     });
 
-
+/*
     socket.on("beep", function(data){
             var NewthisPlayer = {
                 user1 : 1,
@@ -915,7 +930,7 @@ io.on('connection', function(socket){
             }
         //socket.emit("boop2", NewthisPlayer);
         socket.emit("boop", NewthisPlayer);
-    });
+    });*/
 
 });
 
