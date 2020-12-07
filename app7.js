@@ -866,8 +866,7 @@ io.on('connection', function(socket){
                     break;
                 }
             }
-
-            if(gameroom[0].GameStartCount == 2){
+            if(gameroom[0].GameStartCount == 4){
                 var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1
 
                 clients1[ImposterNumber].isImposter = true;
@@ -902,6 +901,12 @@ io.on('connection', function(socket){
 
         socket.broadcast.emit("SendToServerMsg", msg);
     });
+    socket.on("kill", function(data){
+        var msg = JSON.parse(data);
+        console.log("kill");
+        console.log(msg);
+        socket.broadcast.emit("serverSendKillInfo", msg);
+    });
 
 
 
@@ -918,20 +923,6 @@ io.on('connection', function(socket){
 
         socket.broadcast.emit("MsgRes", msg);
     });
-
-/*
-    socket.on("beep", function(data){
-            var NewthisPlayer = {
-                user1 : 1,
-                user2 : 2,
-                user3 : 3,
-                user4 : 4,
-                user5 : 5
-            }
-        //socket.emit("boop2", NewthisPlayer);
-        socket.emit("boop", NewthisPlayer);
-    });*/
-
 });
 
 
