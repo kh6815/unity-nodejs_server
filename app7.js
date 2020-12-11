@@ -155,6 +155,7 @@ router.route('/process/adduser').post(function(req, res) {
 
 });
 
+//회원가입시 아이디 중복 체크
 router.route('/process/idcheck').post(function(req, res){
     console.log('/process/idcheck 호출됨.');
 
@@ -196,6 +197,7 @@ router.route('/process/idcheck').post(function(req, res){
 	}
 });
 
+//아이디 찾기 함수
 router.route('/process/findid').post(function(req, res){
     console.log('/process/findid 호출됨.');
 
@@ -243,6 +245,7 @@ router.route('/process/findid').post(function(req, res){
 	}
 });
 
+//패스워드찾기 함수
 router.route('/process/findpw').post(function(req, res){
     console.log('/process/findpw 호출됨.');
 
@@ -287,6 +290,7 @@ router.route('/process/findpw').post(function(req, res){
 	}
 });
 
+//닉네임 저장 함수
 router.route('/process/nickname').post(function(req, res){
     console.log('/process/nickname 호출됨.');
 
@@ -331,7 +335,7 @@ router.route('/process/nickname').post(function(req, res){
 	}
 });
 
-//Updata character
+//Update character
 router.route('/process/updatecharacter').post(function(req, res){
     console.log('/process/updatacharacter 호출됨.');
 
@@ -353,19 +357,12 @@ router.route('/process/updatecharacter').post(function(req, res){
 			if (rows) {
 				console.dir(rows);
 
-                // 조회 결과에서 사용자 이름 확인
-				//var username = rows[0].name;
-
-				//이메일로 가입한 id들을 찾음
-                //res.send("no");
 
                 res.json({
                     message: '캐릭터 설정 성공'
                 });
 
 			} else {  // 조회된 레코드가 없는 경우 실패 응답 전송
-                //이메일로 가입한 id가 없음
-                //res.send("ok");
                 res.json({
                     message: '캐릭터 설정 실패'
                 });
@@ -593,6 +590,7 @@ var FindPW = function(id, email, callback) {
     });
 }
 
+//이름 업데이트
 var UpdateName = function(name, id, callback){
     console.log('UpdateName 호출됨 : ' + name);
 
@@ -627,6 +625,7 @@ var UpdateName = function(name, id, callback){
     });
 }
 
+//캐릭터 업데이트
 var UpdateCharacterName = function(character, id, callback){
     console.log('UpdateCharacterName 호출됨 : ' + character);
 
@@ -686,19 +685,24 @@ app.on('close', function () {
 });*/
 
 
+//게임룸만들고 게임 시작 카운터 변수, 이미지 매칭번호 변수 생성
 var gameroom = [{
     GameStartCount : 0,
     imageMatchingCount : 0
 }, {
     GameStartCount : 0,
     imageMatchingCount : 0
-}];//0번방, 1번방 생성
+}];
+//0번방, 1번방 생성
 var clients1 = [];
 var clients2 = [];
 
 var example =0;
 
 var image_count_number = 0;
+var PlayerVote = 0;
+
+//소켓 연결 기다림
 io.on('connection', function(socket){
     console.log('a user connected');
 
@@ -713,20 +717,11 @@ io.on('connection', function(socket){
         socket.emit("ImageCount", count_number);
     }
 */
-
-    socket.on("User_Image", function(data){
-    });
-
-
-
-
-
-
-
+    //소켓 연결이 끊어졌을 때
     socket.on('disconnect', function(){
       console.log('user disconnected');
     });
-
+    //룸 세팅 이벤트
     socket.on("Waiting", function(data){ //룸 유저 수 보여주기 위한 메서드
         console.log("WaitingRoom에 들어옴");
          var msg = {
@@ -736,7 +731,7 @@ io.on('connection', function(socket){
 
          socket.emit('resWaitingRoom', msg); //자기 자신한테 보내기
     });
-
+    //방에 합류할 때
     socket.on("JoinRoom", function(data){
         console.log(typeof(data));
         var msg = JSON.parse(data);
@@ -800,6 +795,7 @@ io.on('connection', function(socket){
         //io.to(roomNumber).broadcast.emit('JoinRoom', temp);
     });
 
+    //방 떠날 때
     socket.on("LeaveRoom",function(data){
         console.log(typeof(data));
         console.log("LeaveRoom에 들어옴");
@@ -842,7 +838,7 @@ io.on('connection', function(socket){
         }
     });
 
-
+    //유저들이 레디 버튼을 눌렀을 때
     socket.on("ReadyButton", function(data){
         console.log(typeof(data));
         var msg = JSON.parse(data);
@@ -866,10 +862,11 @@ io.on('connection', function(socket){
                     break;
                 }
             }
-            if(gameroom[0].GameStartCount == 4){
+            if(gameroom[0].GameStartCount == 2){
                 var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1
 
-                clients1[ImposterNumber].isImposter = true;
+                //clients1[ImposterNumber].isImposter = true;
+                clients1[0].isImposter = true;
 
                 var temp = {
                     USER : clients1,
@@ -901,6 +898,7 @@ io.on('connection', function(socket){
 
         socket.broadcast.emit("SendToServerMsg", msg);
     });
+
     socket.on("kill", function(data){
         var msg = JSON.parse(data);
         console.log("kill");
@@ -911,8 +909,23 @@ io.on('connection', function(socket){
 
 
 
+    socket.on("SendMissionScore", function(data){
+        var missionscore = JSON.parse(data);
+        var mission = {
+            taskbarscore : missionscore.taskbarscore
+        }
+        socket.broadcast.emit("GetMissionScore", mission);
+    });
 
-
+    socket.on("SendSabotageIndex", function(data){
+        var SabotageIndex = JSON.parse(data);
+        var SabotageIndeX ={
+            index : SabotageIndex.index
+        }
+        console.log(SabotageIndeX);
+                console.log(SabotageIndex);
+        socket.broadcast.emit("GetSabotageIndex", SabotageIndeX);
+    });
 
 
 
@@ -923,9 +936,67 @@ io.on('connection', function(socket){
 
         socket.broadcast.emit("MsgRes", msg);
     });
+
+
+    socket.on("move1", function(data){
+        var msg = JSON.parse(data);
+
+        console.log(msg);
+        socket.broadcast.emit("sendTomove1", msg);
+    });
+
+    socket.on("move2", function(data){
+        var msg = JSON.parse(data);
+
+        socket.broadcast.emit("sendTomove2", msg);
+    });
+    socket.on("move3", function(data){
+        var msg = JSON.parse(data);
+
+        socket.broadcast.emit("sendTomove3", msg);
+    });
+    socket.on("move4", function(data){
+        var msg = JSON.parse(data);
+
+        socket.broadcast.emit("sendTomove4", msg);
+    });
+    socket.on("move5", function(data){
+        var msg = JSON.parse(data);
+
+         socket.broadcast.emit("sendTomove5", msg);
+    });
+
+    socket.on("SendPlayerMeeting", function(data){
+        var playerMeeting = JSON.parse(data);
+        var getPlayerMeeting = {
+            isItMeeting : playerMeeting.isItMeeting,
+            playerName : playerMeeting.playerName
+        }
+        console.log(getPlayerMeeting);
+        console.log(playerMeeting);
+        io.sockets.in(0).emit("GetPlayerMeeting", getPlayerMeeting);
+        //socket.emit("GetPlayerMeeting", getPlayerMeeting);
+    });
+  socket.on("SendPlayerVote", function(data){
+        var sendVotePlayer = JSON.parse(data);
+        var getVotePlayer = {
+            votedPlayerIndex : sendVotePlayer.votedPlayerIndex,
+            pointedOutPlayerIndex : sendVotePlayer.pointedOutPlayerIndex,
+            PlayerVote : PlayerVote + 1,
+            VoteDone : false
+        }
+        if(getVotePlayer.PlayerVote == 2)
+        {
+            getVotePlayer.VoteDone = true;
+            console.log(getVotePlayer);
+        }
+        io.sockets.in(0).emit("GetPlayerVote", getVotePlayer);
+    });
 });
 
 
-http.listen(8080, function(){
+
+
+http.listen(12345, function(){
   console.log('listening on *:8080');
 });
