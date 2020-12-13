@@ -701,6 +701,7 @@ var example =0;
 
 var image_count_number = 0;
 var PlayerVote = 0;
+var killCount = 0;
 
 //소켓 연결 기다림
 io.on('connection', function(socket){
@@ -862,11 +863,11 @@ io.on('connection', function(socket){
                     break;
                 }
             }
-            if(gameroom[0].GameStartCount == 2){
-                var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1
+            if(gameroom[0].GameStartCount == 1){//여기바꾸꺼거어엉
+                var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1  //여기바꾸꺼거어엉
 
-                //clients1[ImposterNumber].isImposter = true;
-                clients1[0].isImposter = true;
+                //clients1[ImposterNumber].isImposter = true;//여기바꾸꺼거어엉
+                clients1[0].isImposter = true;//여기바꾸꺼거어엉
 
                 var temp = {
                     USER : clients1,
@@ -889,21 +890,27 @@ io.on('connection', function(socket){
     });
 
 
-    socket.on("exampleMsg", function(data){
+    socket.on("SendMessage", function(data){
         var msg = JSON.parse(data);
-        var name = msg.name;
-        var text = msg.text;
-        console.log(name);
-        console.log(text);
+        //var name = msg.name;
+        //var text = msg.text;
+        //var imagePath = msg.imagePath;
 
-        socket.broadcast.emit("SendToServerMsg", msg);
+        socket.broadcast.emit("GetMessage", msg);
     });
 
     socket.on("kill", function(data){
         var msg = JSON.parse(data);
         console.log("kill");
         console.log(msg);
-        socket.broadcast.emit("serverSendKillInfo", msg);
+        killCount++;
+
+        if(killCount > 0){ //여기바꾸꺼거어엉
+            io.sockets.in(0).emit("GameEnd", "게임끝");
+        }
+        else{
+            socket.broadcast.emit("serverSendKillInfo", msg);
+        }
     });
 
 
@@ -914,6 +921,7 @@ io.on('connection', function(socket){
         var mission = {
             taskbarscore : missionscore.taskbarscore
         }
+
         socket.broadcast.emit("GetMissionScore", mission);
     });
 
@@ -979,24 +987,27 @@ io.on('connection', function(socket){
     });
   socket.on("SendPlayerVote", function(data){
         var sendVotePlayer = JSON.parse(data);
+        PlayerVote = PlayerVote + 1
         var getVotePlayer = {
             votedPlayerIndex : sendVotePlayer.votedPlayerIndex,
             pointedOutPlayerIndex : sendVotePlayer.pointedOutPlayerIndex,
-            PlayerVote : PlayerVote + 1,
+            PlayerVote : PlayerVote,
             VoteDone : false
         }
-        if(getVotePlayer.PlayerVote == 2)
+        if(getVotePlayer.PlayerVote == 2)//여기바꾸꺼거어엉
         {
             getVotePlayer.VoteDone = true;
             console.log(getVotePlayer);
         }
-        io.sockets.in(0).emit("GetPlayerVote", getVotePlayer);
+        socket.broadcast.emit("GetPlayerVote", getVotePlayer);
     });
+
+
 });
 
 
 
 
-http.listen(12345, function(){
+http.listen(12456, function(){
   console.log('listening on *:8080');
 });
