@@ -672,7 +672,6 @@ app.use( expressErrorHandler.httpError(404) );
 app.use( errorHandler );*/
 
 
-//===== 서버 시작 =====//
 
 // 프로세스 종료 시에 데이터베이스 연결 해제
 process.on('SIGTERM', function () {
@@ -726,8 +725,8 @@ io.on('connection', function(socket){
     socket.on("Waiting", function(data){ //룸 유저 수 보여주기 위한 메서드
         console.log("WaitingRoom에 들어옴");
          var msg = {
-             room1 : gameroom[0].imageMatchingCount,
-             room2 : gameroom[1].imageMatchingCount
+             room1 : gameroom[0].imageMatchingCount, // 룸1의 유저수를 확인
+             room2 : gameroom[1].imageMatchingCount //룸2의 유저수를 확인
          }
 
          socket.emit('resWaitingRoom', msg); //자기 자신한테 보내기
@@ -735,7 +734,7 @@ io.on('connection', function(socket){
     //방에 합류할 때
     socket.on("JoinRoom", function(data){
         console.log(typeof(data));
-        var msg = JSON.parse(data);
+        var msg = JSON.parse(data); // 클라이언트에서 넘어온 값 json 변환
         var RoomName = msg.RoomName; //0번방 또는 1번방
         var UserID = msg.UserID;
         var UserName = msg.UserName;
@@ -747,7 +746,7 @@ io.on('connection', function(socket){
             if(gameroom[0].GameStartCount < 5){//게임이 시작되었으면 참가 못하게하기위함.
                 socket.join(0);//방에 참가
 
-                clients1.push({
+                clients1.push({ // 룸1에 새로운 유저를 저장
                 UserID : msg.UserID,
                 UserName : msg.UserName,
                 UserCharacter : msg.Character,
@@ -760,12 +759,12 @@ io.on('connection', function(socket){
                 });
 
 
-                var temp = {
+                var temp = { //유저 배열과 , 게임 시작 카운터를 클라이언트로보냄
                     USER : clients1,
                     GameStartCount : gameroom[0].GameStartCount
                 }
 
-                io.sockets.in(0).emit("JoinRoomUserInfo", temp);
+                io.sockets.in(0).emit("JoinRoomUserInfo", temp); // 소켓 룸 0번째의 모든 유저에게 데이터 전달
 
                 }
             else{
@@ -773,7 +772,7 @@ io.on('connection', function(socket){
             }
                     //userid, image랑 매칭할 숫자값?,
         }
-        else if(RoomName == "Room 2"){//room2
+        else if(RoomName == "Room 2"){//room2도 같은 방식으로 구현
             socket.join(1);
             //userid, image랑 매칭할 숫자값?,
              //클라이언트쪽에 저장해놓을 데이터
@@ -805,21 +804,21 @@ io.on('connection', function(socket){
         var RoomName = msg.RoomName;
         var i,j,checkNum;
 
-        if(RoomName == "Room 1"){
-            for(i = 0; i < clients1.length; i++){
-                if(clients1[i].UserID == msg.UserID){
-                     if(clients1[i].readyCheck == false){
+        if(RoomName == "Room 1"){ // 룸 이름이 1일때
+            for(i = 0; i < clients1.length; i++){ //룸1의 유저들 배열의 길이까지 반복문
+                if(clients1[i].UserID == msg.UserID){ //클라이언트에 받은 유저의 id랑 같으면
+                     if(clients1[i].readyCheck == false){ //레디 안했을 경우
                         //gameroom[0].GameStartCount--;
-                        gameroom[0].imageMatchingCount--;
-                        clients1.splice(i, 1);
-                        socket.leave(0);
+                        gameroom[0].imageMatchingCount--; // 매치된 이미지 번호를 하나 다운시키고
+                        clients1.splice(i, 1); //배열에서 제외
+                        socket.leave(0); // 소켓 방에서 제외
                          break;
                     }
-                    else{
-                        gameroom[0].GameStartCount--;
-                        gameroom[0].imageMatchingCount--;
-                        clients1.splice(i, 1);
-                        socket.leave(0);
+                    else{ // 레디 했을 경우
+                        gameroom[0].GameStartCount--; //게임스타트 카운터를 하나 다운
+                        gameroom[0].imageMatchingCount--; // 매치된 이미지 번호를 하나 다운
+                        clients1.splice(i, 1); // 룸1의 유저 배열에서 제외
+                        socket.leave(0); // 소켓 방에서 제외
                         break;
                     }
                 }
@@ -828,11 +827,11 @@ io.on('connection', function(socket){
             for(i = 1; i <= gameroom[0].imageMatchingCount; i++ ){
                 clients1[i-1].imageNumber = i; //이미지 넘버 리셋
             }
-            var temp = {
+            var temp = { //유저정보, 게임스타트카운터 저장한 구조체
                 USER : clients1,
                 GameStartCount : gameroom[0].GameStartCount
             }
-            io.sockets.in(1).emit("NewLeaveRoomUserInfo", temp);
+            io.sockets.in(1).emit("NewLeaveRoomUserInfo", temp); // 클라이언트로 넘김
         }
         else if(RoomName == "Room 2"){
 
@@ -848,40 +847,38 @@ io.on('connection', function(socket){
         var ReadCheck= msg.ReadyCheck;
         var i;
 
-        if(RoomName == "Room 1"){
+        if(RoomName == "Room 1"){ //룸1일 때
 
             for(i = 0; i < clients1.length; i++){
                 if(clients1[i].UserID == msg.UserID){
-                    if(clients1[i].readyCheck == false){
-                        clients1[i].readyCheck = true;
-                        gameroom[0].GameStartCount++;
+                    if(clients1[i].readyCheck == false){ // 레디를 안했을 때
+                        clients1[i].readyCheck = true; //레디했다고 바꿈
+                        gameroom[0].GameStartCount++; //스타트 카운터를 ++;
                     }
-                    else{
-                        clients1[i].readyCheck = false;
-                        gameroom[0].GameStartCount--;
+                    else{ // 레디 했을 경우
+                        clients1[i].readyCheck = false; //다시 레디를 안했다고 바꿈
+                        gameroom[0].GameStartCount--; // 스타트 카운터를 --;
                     }
                     break;
                 }
             }
-            if(gameroom[0].GameStartCount == 1){//여기바꾸꺼거어엉
-                var ImposterNumber =  Math.floor(Math.random() * 10) % 2 // 일단 0, 1  //여기바꾸꺼거어엉
+            if(gameroom[0].GameStartCount == 5){// 게임 카운터가 5가 됬을때, 유저 5명이 게임 스타트를 눌렀을 때
+                var ImposterNumber =  Math.floor(Math.random() * 10) % 5 // 일단 0~5사이의 변수 생성
 
-                //clients1[ImposterNumber].isImposter = true;//여기바꾸꺼거어엉
-                clients1[0].isImposter = true;//여기바꾸꺼거어엉
+                clients1[ImposterNumber].isImposter = true;//랜덤으로 임포스터 값 설정
 
-                var temp = {
+                var temp = { //유저 배열과 게임 스타트 카운터 구조체 만듬
                     USER : clients1,
-                    GameStartCount : gameroom[0].GameStartCount//오류 뜰수도 있으니까 그냥 넘겨줌
+                    GameStartCount : gameroom[0].GameStartCount
                 }
-                io.sockets.in(0).emit("GameStart", temp);
+                io.sockets.in(0).emit("GameStart", temp); //클라이언트에 게임 시작이라는 이벤트 넘겨줌
             }
-            else{
-                var temp = {
+            else{ // 아직 레디버튼을 누르지 않았으면
+                var temp = { //
                     USER : clients1,
                      GameStartCount : gameroom[0].GameStartCount
-                    //count도 보내주자
                 }
-                io.sockets.in(0).emit("GameStartCount", temp);
+                io.sockets.in(0).emit("GameStartCount", temp); //게임 카운터를 올려주는 이벤트 모든 유저에게 클라이언트로 보냄
             }
         }
         else if(RoomName == "Room 2"){
@@ -890,25 +887,25 @@ io.on('connection', function(socket){
     });
 
 
-    socket.on("SendMessage", function(data){
+    socket.on("SendMessage", function(data){ //투표 채팅시에 유저 채팅메세지 받음
         var msg = JSON.parse(data);
         //var name = msg.name;
         //var text = msg.text;
         //var imagePath = msg.imagePath;
 
-        socket.broadcast.emit("GetMessage", msg);
+        socket.broadcast.emit("GetMessage", msg); // 채팅메세지 브로드캐스트함.
     });
 
-    socket.on("kill", function(data){
+    socket.on("kill", function(data){ //임포스터가 유저를 죽였을 때
         var msg = JSON.parse(data);
         console.log("kill");
         console.log(msg);
-        killCount++;
+        killCount++; // 킬 카운터를 올려줌
 
-        if(killCount > 0){ //여기바꾸꺼거어엉
+        if(killCount > 3){ //4명이상 킬을 했을 때 게임이 끝남
             io.sockets.in(0).emit("GameEnd", "게임끝");
         }
-        else{
+        else{ // 4명이 아닐경우 kill 정보를 클라이언트로 보냄
             socket.broadcast.emit("serverSendKillInfo", msg);
         }
     });
@@ -916,23 +913,23 @@ io.on('connection', function(socket){
 
 
 
-    socket.on("SendMissionScore", function(data){
+    socket.on("SendMissionScore", function(data){ //시민이 미션을 성공했을 때
         var missionscore = JSON.parse(data);
         var mission = {
             taskbarscore : missionscore.taskbarscore
-        }
+        } // 미션 게이지바를 값을 저장하여 클라이언트로 보냄
 
-        socket.broadcast.emit("GetMissionScore", mission);
+        socket.broadcast.emit("GetMissionScore", mission);//미션 정보를 브로드 캐스트함.
     });
 
-    socket.on("SendSabotageIndex", function(data){
+    socket.on("SendSabotageIndex", function(data){ //임포스터가 사포타지를 했을 때
         var SabotageIndex = JSON.parse(data);
         var SabotageIndeX ={
             index : SabotageIndex.index
         }
-        console.log(SabotageIndeX);
-                console.log(SabotageIndex);
-        socket.broadcast.emit("GetSabotageIndex", SabotageIndeX);
+        //console.log(SabotageIndeX);
+        //console.log(SabotageIndex);
+        socket.broadcast.emit("GetSabotageIndex", SabotageIndeX); // 사보타지정보를 브로드캐스트함.
     });
 
 
@@ -946,35 +943,39 @@ io.on('connection', function(socket){
     });
 
 
+    //유저1이 움직였을 때
     socket.on("move1", function(data){
         var msg = JSON.parse(data);
 
         console.log(msg);
-        socket.broadcast.emit("sendTomove1", msg);
+        socket.broadcast.emit("sendTomove1", msg); //유저1의 x,y값을 브로드캐스트
     });
-
+    //유저2이 움직였을 때
     socket.on("move2", function(data){
         var msg = JSON.parse(data);
 
-        socket.broadcast.emit("sendTomove2", msg);
+        socket.broadcast.emit("sendTomove2", msg);//유저2의 x,y값을 브로드캐스트
     });
+    //유저3이 움직였을 때
     socket.on("move3", function(data){
         var msg = JSON.parse(data);
 
-        socket.broadcast.emit("sendTomove3", msg);
+        socket.broadcast.emit("sendTomove3", msg);//유저3의 x,y값을 브로드캐스트
     });
+    //유저4이 움직였을 때
     socket.on("move4", function(data){
         var msg = JSON.parse(data);
 
-        socket.broadcast.emit("sendTomove4", msg);
+        socket.broadcast.emit("sendTomove4", msg);//유저4의 x,y값을 브로드캐스트
     });
+    //유저5이 움직였을 때
     socket.on("move5", function(data){
         var msg = JSON.parse(data);
 
-         socket.broadcast.emit("sendTomove5", msg);
+         socket.broadcast.emit("sendTomove5", msg);//유저5의 x,y값을 브로드캐스트
     });
 
-    socket.on("SendPlayerMeeting", function(data){
+    socket.on("SendPlayerMeeting", function(data){ //투표미팅이 시작됬을 때
         var playerMeeting = JSON.parse(data);
         var getPlayerMeeting = {
             isItMeeting : playerMeeting.isItMeeting,
@@ -982,21 +983,21 @@ io.on('connection', function(socket){
         }
         console.log(getPlayerMeeting);
         console.log(playerMeeting);
-        io.sockets.in(0).emit("GetPlayerMeeting", getPlayerMeeting);
+        io.sockets.in(0).emit("GetPlayerMeeting", getPlayerMeeting); // 방인원에게 알림
         //socket.emit("GetPlayerMeeting", getPlayerMeeting);
     });
-  socket.on("SendPlayerVote", function(data){
+  socket.on("SendPlayerVote", function(data){ //투표를 했을 때
         var sendVotePlayer = JSON.parse(data);
-        PlayerVote = PlayerVote + 1
+        PlayerVote = PlayerVote + 1 // 투표카운터를 올림
         var getVotePlayer = {
             votedPlayerIndex : sendVotePlayer.votedPlayerIndex,
             pointedOutPlayerIndex : sendVotePlayer.pointedOutPlayerIndex,
             PlayerVote : PlayerVote,
             VoteDone : false
         }
-        if(getVotePlayer.PlayerVote == 2)//여기바꾸꺼거어엉
+        if(getVotePlayer.PlayerVote == 5)//투표 인원이 5명이 됬을 때
         {
-            getVotePlayer.VoteDone = true;
+            getVotePlayer.VoteDone = true; // 투표 완료를 표시
             console.log(getVotePlayer);
         }
         socket.broadcast.emit("GetPlayerVote", getVotePlayer);
@@ -1007,7 +1008,8 @@ io.on('connection', function(socket){
 
 
 
-
+//===== 서버 시작 =====//
+//포트 12456으로 개방
 http.listen(12456, function(){
-  console.log('listening on *:8080');
+  console.log('listening on *:12456');
 });
