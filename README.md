@@ -15,3 +15,7 @@
 3. 게임 동작 영상 (유튜브)
  - 임포스터 승리 : https://www.youtube.com/watch?v=zU1AfUwr8mk
  - 시민 승리     : https://www.youtube.com/watch?v=Kf0kyZl4hD8
+
+4. 해당 서버는 라즈베리파이에 nodejs를 설치하여 포트포워딩을 하였고, 팀원 5명이 각자 게임에 접속하여 즐기는 온라인 게임이다.
+
+5. 자세한 설명은 유티니 깃허브와 게임동작영상 참고
