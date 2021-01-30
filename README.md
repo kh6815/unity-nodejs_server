@@ -6,11 +6,11 @@
 2. 해당 깃허브는 nodejs 서버구현코드를 나타냄.
 
   - 유니티 깃허브
-    - https://github.com/kh-Yoo/VI_Earth_Pr...​
-    - https://github.com/qlqlf/UnitySihyung​
+    - https://github.com/kh-Yoo/VI_Earth_Project
+    - https://github.com/qlqlf/UnitySihyung
 
   - 서버 깃허브
-    - https://github.com/kh6815/unity-nodej...
+    - https://github.com/kh6815/unity-nodejs_server/tree/master
 
 
 3. 게임 동작 영상 (유튜브)
